@@ -3,6 +3,7 @@ package chat1
 import (
 	"bytes"
 	"crypto/sha256"
+	"encoding/binary"
 	"encoding/hex"
 	"flag"
 	"fmt"
@@ -913,6 +914,27 @@ func (d *SignEncryptedData) AsSealed() SealedData {
 		E: d.E,
 		N: d.N,
 	}
+}
+
+func (d EncryptedData) CanonicalHash() []byte {
+	return d.AsSealed().CanonicalHash()
+}
+
+func (d SignEncryptedData) CanonicalHash() []byte {
+	return d.AsSealed().CanonicalHash()
+}
+
+func (d SealedData) CanonicalHash() []byte {
+	state := sha256.New()
+	// Everything here is either fixed length (8 bytes for the version number)
+	// or length-prefixed (the nonce and the encrypted payload). That
+	// guarantees that the serialization cannot collide with a different input.
+	binary.Write(state, binary.LittleEndian, uint64(d.V))
+	binary.Write(state, binary.LittleEndian, uint64(len(d.N)))
+	binary.Write(state, binary.LittleEndian, d.N)
+	binary.Write(state, binary.LittleEndian, uint64(len(d.E)))
+	binary.Write(state, binary.LittleEndian, d.E)
+	return state.Sum(nil)
 }
 
 func NewConversationErrorLocal(

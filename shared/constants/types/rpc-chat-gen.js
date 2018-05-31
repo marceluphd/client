@@ -489,6 +489,7 @@ export const remoteMessageBoxedVersion = {
   v1: 1,
   v2: 2,
   v3: 3,
+  v4: 4,
 }
 
 export const remoteNewConversationRemote2RpcChannelMap = (configKeys: Array<string>, request: RemoteNewConversationRemote2RpcParam): EngineChannel => engine()._channelMapRpcHelper(configKeys, 'chat.1.remote.newConversationRemote2', request)
@@ -1025,13 +1026,14 @@ export type MessageAttachmentUploaded = $ReadOnly<{messageID: MessageID, object:
 
 export type MessageBody = {messageType: 1, text: ?MessageText} | {messageType: 2, attachment: ?MessageAttachment} | {messageType: 3, edit: ?MessageEdit} | {messageType: 4, delete: ?MessageDelete} | {messageType: 5, metadata: ?MessageConversationMetadata} | {messageType: 7, headline: ?MessageHeadline} | {messageType: 8, attachmentuploaded: ?MessageAttachmentUploaded} | {messageType: 9, join: ?MessageJoin} | {messageType: 10, leave: ?MessageLeave} | {messageType: 11, system: ?MessageSystem} | {messageType: 12, deletehistory: ?MessageDeleteHistory} | {messageType: 13, reaction: ?MessageReaction}
 
-export type MessageBoxed = $ReadOnly<{version: MessageBoxedVersion, serverHeader?: ?MessageServerHeader, clientHeader: MessageClientHeader, headerCiphertext: SealedData, bodyCiphertext: EncryptedData, verifyKey: Bytes, keyGeneration: Int}>
+export type MessageBoxed = $ReadOnly<{version: MessageBoxedVersion, serverHeader?: ?MessageServerHeader, clientHeader: MessageClientHeader, headerCiphertext: SealedData, bodyCiphertext: EncryptedData, verifyKey: Bytes, keyGeneration: Int, pairwiseMacs: {[key: string]: Bytes}}>
 
 export type MessageBoxedVersion =
   | 0 // VNONE_0
   | 1 // V1_1
   | 2 // V2_2
   | 3 // V3_3
+  | 4 // V4_4
 
 export type MessageClientHeader = $ReadOnly<{conv: ConversationIDTriple, tlfName: String, tlfPublic: Boolean, messageType: MessageType, supersedes: MessageID, kbfsCryptKeysUsed?: ?Boolean, deletes?: ?Array<MessageID>, prev?: ?Array<MessagePreviousPointer>, deleteHistory?: ?MessageDeleteHistory, sender: Gregor1.UID, senderDevice: Gregor1.DeviceID, merkleRoot?: ?MerkleRoot, outboxID?: ?OutboxID, outboxInfo?: ?OutboxInfo, ephemeralMetadata?: ?MsgEphemeralMetadata}>
 

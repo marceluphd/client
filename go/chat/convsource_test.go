@@ -517,6 +517,11 @@ func (f failingTlf) EphemeralDecryptionKey(ctx context.Context, tlfName string, 
 	panic("unimplemented")
 }
 
+func (f failingTlf) ShouldPairwiseMAC(ctx context.Context, tlfName string, tlfID chat1.TLFID,
+	membersType chat1.ConversationMembersType, public bool) (bool, []keybase1.KID, error) {
+	panic("unimplemented")
+}
+
 type failingUpak struct {
 	t *testing.T
 }

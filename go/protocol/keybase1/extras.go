@@ -1343,6 +1343,7 @@ func (d DurationSec) Duration() time.Duration {
 	return time.Duration(d) * time.Second
 }
 
+// TODO: Does this rely on sibkeys coming before subkeys?
 func (u UserPlusAllKeys) FindDevice(d DeviceID) *PublicKey {
 	for _, k := range u.Base.DeviceKeys {
 		if k.DeviceID.Eq(d) {
