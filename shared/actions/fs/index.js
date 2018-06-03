@@ -348,6 +348,26 @@ function* _loadMimeType(path: Types.Path) {
 
 const loadMimeType = (action: FsGen.MimeTypeLoadPayload) => Saga.call(_loadMimeType, action.payload.path)
 
+const newFolder = (action: FsGen.NewFolderPayload) =>
+  Saga.call(RPCTypes.SimpleFSSimpleFSOpenRpcPromise, {
+    opID: Constants.makeUUID(),
+    dest: {
+      PathType: RPCTypes.simpleFSPathType.kbfs,
+      kbfs: Constants.fsPathToRpcPathString(action.payload.path),
+    },
+    flags: RPCTypes.simpleFSOpenFlags.directory,
+  })
+
+const newFolderSuccess = (res, action) =>
+  Saga.sequentially([
+    Saga.put(FsGen.createNewFolderRowClear({path: action.payload.path})),
+    Saga.put(FsGen.createFolderListLoad({path: Types.getPathParent(action.payload.path)})),
+  ])
+const newFolderFailed = (res, {payload: {path}}) => {
+  console.log(res)
+  return Saga.put(FsGen.createNewFolderFailed({path}))
+}
+
 function* fileActionPopup(action: FsGen.FileActionPopupPayload): Saga.SagaGenerator<any, any> {
   const {path, type, targetRect, routePath} = action.payload
   // We may not have the folder loaded yet, but will need metadata to know
@@ -434,31 +454,36 @@ function* loadResets(action: FsGen.LoadResetsPayload): Saga.SagaGenerator<any, a
         const result: RPCChatTypes.UnverifiedInboxUIItems = JSON.parse(inbox)
         // whatever
         if (!result || !result.items) return EngineRpc.rpcResult()
-        const tlfs: Array<[Types.Path, Types.ResetMetadata]> = result.items.reduce((filtered, item: RPCChatTypes.UnverifiedInboxUIItem) => {
-          const visibility = item.visibility === RPCTypes.commonTLFVisibility.private
+        const tlfs: Array<[Types.Path, Types.ResetMetadata]> = result.items.reduce(
+          (filtered, item: RPCChatTypes.UnverifiedInboxUIItem) => {
+            const visibility =
+              item.visibility === RPCTypes.commonTLFVisibility.private
                 ? item.membersType === team
                   ? 'team'
                   : 'private'
                 : 'public'
-          const name = item.name
-          const path = Types.stringToPath(`/keybase/${visibility}/${name}`)
-          if (
-            item &&
+            const name = item.name
+            const path = Types.stringToPath(`/keybase/${visibility}/${name}`)
+            if (
+              item &&
               item.localMetadata &&
               item.localMetadata.resetParticipants &&
               // Ignore KBFS-backed TLFs
               [team, impteamnative, impteamupgrade].includes(item.membersType)
-          ) {
-            filtered.push([
-              path, {
-                name,
-                visibility,
-                resetParticipants: item.localMetadata.resetParticipants || [],
-              },
-            ])
-          }
-          return filtered
-        }, [])
+            ) {
+              filtered.push([
+                path,
+                {
+                  name,
+                  visibility,
+                  resetParticipants: item.localMetadata.resetParticipants || [],
+                },
+              ])
+            }
+            return filtered
+          },
+          []
+        )
         yield Saga.put(FsGen.createLoadResetsResult({tlfs: I.Map(tlfs)}))
         return EngineRpc.rpcResult()
       },
@@ -491,6 +516,7 @@ function* fsSaga(): Saga.SagaGenerator<any, any> {
   yield Saga.safeTakeEvery(FsGen.favoriteIgnore, ignoreFavoriteSaga)
   yield Saga.safeTakeEveryPure(FsGen.mimeTypeLoad, loadMimeType)
   yield Saga.safeTakeEvery(FsGen.loadResets, loadResets)
+  yield Saga.safeTakeEveryPure(FsGen.newFolder, newFolder, newFolderSuccess, newFolderFailed)
 
   if (!isMobile) {
     // TODO: enable these when we need it on mobile.
