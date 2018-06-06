@@ -124,6 +124,12 @@ const provider = createPropProvider({
   }),
 })
 
+const commonRowProps = {
+  onSubmit: action('onSubmit'),
+  onUpdate: action('onUpdate'),
+  onCancel: action('onCancel'),
+}
+
 const load = () => {
   storiesOf('Files', module)
     .addDecorator(provider)
@@ -161,9 +167,7 @@ const load = () => {
           status="editing"
           itemStyles={folderItemStyles}
           isCreate={true}
-          onSubmit={action('onSubmit')}
-          onUpdate={action('onUpdate')}
-          onCancel={action('onCancel')}
+          {...commonRowProps}
         />
         <EditingRow
           name="From Dropbox (rename) (editing)"
@@ -171,9 +175,7 @@ const load = () => {
           status="editing"
           itemStyles={folderItemStyles}
           isCreate={false}
-          onSubmit={action('onSubmit')}
-          onUpdate={action('onUpdate')}
-          onCancel={action('onCancel')}
+          {...commonRowProps}
         />
         <EditingRow
           name="New Folder (saving)"
@@ -181,9 +183,7 @@ const load = () => {
           status="saving"
           itemStyles={folderItemStyles}
           isCreate={true}
-          onSubmit={action('onSubmit')}
-          onUpdate={action('onUpdate')}
-          onCancel={action('onCancel')}
+          {...commonRowProps}
         />
         <EditingRow
           name="New Folder (failed)"
@@ -191,9 +191,7 @@ const load = () => {
           status="failed"
           itemStyles={folderItemStyles}
           isCreate={true}
-          onSubmit={action('onSubmit')}
-          onUpdate={action('onUpdate')}
-          onCancel={action('onCancel')}
+          {...commonRowProps}
         />
         <UploadingRow name="foo" itemStyles={fileItemStyles} />
         <UploadingRow name="foo" itemStyles={folderItemStyles} />
@@ -206,6 +204,8 @@ const load = () => {
           itemStyles={fileItemStyles}
           badgeCount={0}
           isDownloading={true}
+          isUserReset={false}
+          resetParticipants={[]}
           onOpen={action('onOpen')}
           openInFileUI={action('openInFileUI')}
           onAction={action('onAction')}

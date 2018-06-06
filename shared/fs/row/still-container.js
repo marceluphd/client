@@ -10,8 +10,10 @@ import * as StateMappers from '../utils/state-mappers'
 const mapStateToProps = (state: TypedState, {path}) => {
   const pathItem = state.fs.pathItems.get(path, Constants.makeUnknownPathItem())
   const _username = state.config.username || undefined
+  const _transfers = state.fs.transfers
   return {
     _username,
+    _transfers,
     path,
     kbfsEnabled: StateMappers.mapStateToKBFSEnabled(state),
     pathItem,
@@ -38,11 +40,15 @@ const mergeProps = (stateProps, dispatchProps) => ({
   name: stateProps.pathItem.name,
   type: stateProps.pathItem.type,
   badgeCount: stateProps.pathItem.badgeCount,
+  isDownloading: !!stateProps._transfers.find(
+    t => t.meta.type === 'download' && t.meta.path === stateProps.path && !t.state.isDone
+  ),
   tlfMeta: stateProps.pathItem.tlfMeta,
-  isUserReset: stateProps.pathItem.type === 'folder' && stateProps.pathItem.resetParticipants ? stateProps.pathItem.resetParticipants.includes(stateProps._username) : false,
-  resetParticipants: stateProps.pathItem.type === 'folder'
-    ? stateProps.pathItem.resetParticipants
-    : [],
+  isUserReset:
+    stateProps.pathItem.type === 'folder' && stateProps.pathItem.resetParticipants
+      ? stateProps.pathItem.resetParticipants.includes(stateProps._username)
+      : false,
+  resetParticipants: stateProps.pathItem.type === 'folder' ? stateProps.pathItem.resetParticipants : [],
   lastModifiedTimestamp: stateProps.pathItem.lastModifiedTimestamp,
   lastWriter: stateProps.pathItem.lastWriter.username,
   shouldShowMenu:
