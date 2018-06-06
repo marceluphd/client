@@ -15,6 +15,7 @@ type StillProps = {
   shouldShowMenu: boolean,
   itemStyles: Types.ItemStyles,
   badgeCount: number,
+  isDownloading?: boolean,
   tlfMeta?: Types.FavoriteMetadata,
   resetParticipants: Array<string>,
   isUserReset: boolean,
@@ -37,8 +38,8 @@ const HoverBox = isMobile
       },
     })
 
-const RowMeta = ({badgeCount, isNew, isIgnored, needsRekey, resetParticipants}) => {
-  if (isIgnored || !(isNew || isIgnored || needsRekey || badgeCount || resetParticipants)) {
+const RowMeta = ({badgeCount, isDownloading, isNew, isIgnored, needsRekey, resetParticipants}) => {
+  if (isIgnored || !(isDownloading || isNew || isIgnored || needsRekey || badgeCount || resetParticipants)) {
     return null
   }
 
@@ -52,6 +53,11 @@ const RowMeta = ({badgeCount, isNew, isIgnored, needsRekey, resetParticipants}) 
       {isNew && (
         <Box style={styleBadgeContainerNew}>
           <Meta title="new" backgroundColor={globalColors.orange} />
+        </Box>
+      )}
+      {isDownloading && (
+        <Box style={styleDownloadContainer}>
+          <Icon type="iconfont-download" color={globalColors.green} />
         </Box>
       )}
       <Box style={styleBadgeContainer}>
@@ -70,6 +76,7 @@ const Still = (props: StillProps) => (
           badgeCount={props.badgeCount}
           {...props.tlfMeta}
           resetParticipants={props.resetParticipants}
+          isDownloading={props.isDownloading}
         />
         <Box style={rowStyles.itemBox}>
           <Text
@@ -136,6 +143,12 @@ const styleBadgeContainerRekey = {
   ...styleBadgeContainer,
   top: isMobile ? 5 : 24,
   left: isMobile ? -40 : 16,
+}
+
+const styleDownloadContainer = {
+  ...styleBadgeContainer,
+  top: 22,
+  left: 20,
 }
 
 const badgeStyleCount = {
